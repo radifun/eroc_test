@@ -1,0 +1,10 @@
+[package]
+name = "eroc_test"
+version = "0.0.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "An advanced test framework for Rust."
+repository = "https://github.com/radifun/eroc_test"
+readme = "README.md"
+
+publish = false
