@@ -16,4 +16,6 @@
 // limitations under the License.
 // =================================================================================================
 
-pub mod random;
+mod prng;
+
+pub use prng::DefaultPrng;
