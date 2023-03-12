@@ -16,6 +16,8 @@
 // limitations under the License.
 // =================================================================================================
 
+use std::num::Wrapping;
+
 pub type DefaultPrng = Xoshiro256ss;
 
 // =================================================================================================
@@ -23,7 +25,7 @@ pub type DefaultPrng = Xoshiro256ss;
 // =================================================================================================
 
 pub struct Xoshiro256ss {
-    state: [u64; 4],
+    state: [Wrapping<u64>; 4],
 }
 
 // Constructors ------------------------------------------------------------------------------------
@@ -31,7 +33,12 @@ pub struct Xoshiro256ss {
 impl Xoshiro256ss {
     pub fn from_seed(seed: u64) -> Self {
         let mut gen = SplitMix64::from_seed(seed);
-        let state = [gen.next(), gen.next(), gen.next(), gen.next()];
+        let state = [
+            Wrapping(gen.next()),
+            Wrapping(gen.next()),
+            Wrapping(gen.next()),
+            Wrapping(gen.next()),
+        ];
 
         return Self { state };
     }
@@ -41,7 +48,7 @@ impl Xoshiro256ss {
 
 impl Xoshiro256ss {
     pub fn next(&mut self) -> u64 {
-        let result = Self::rotate(self.state[1] * 5, 7) * 9;
+        let result = Self::rotate(self.state[1] * Wrapping(5u64), 7) * Wrapping(9u64);
 
         let t = self.state[1] << 17;
 
@@ -53,10 +60,10 @@ impl Xoshiro256ss {
         self.state[2] ^= t;
         self.state[3] = Self::rotate(self.state[3], 45);
 
-        return result;
+        return result.0;
     }
 
-    fn rotate(x: u64, k: u64) -> u64 {
+    fn rotate(x: Wrapping<u64>, k: usize) -> Wrapping<u64> {
         return (x << k) | (x >> (64 - k));
     }
 }
@@ -66,14 +73,14 @@ impl Xoshiro256ss {
 // =================================================================================================
 
 struct SplitMix64 {
-    state: u64,
+    state: Wrapping<u64>,
 }
 
 // Constructors ------------------------------------------------------------------------------------
 
 impl SplitMix64 {
     fn from_seed(seed: u64) -> Self {
-        return Self { state: seed };
+        return Self { state: Wrapping(seed) };
     }
 }
 
@@ -82,12 +89,12 @@ impl SplitMix64 {
 impl SplitMix64 {
     fn next(&mut self) -> u64 {
         let mut result = self.state;
-        self.state += 0x9e3779b97f4a7c15;
+        self.state += 0x9e3779b97f4a7c15u64;
 
-        result = (result ^ (result >> 30)) * 0xbf58476d1ce4e5b9;
-        result = (result ^ (result >> 27)) * 0x94d049bb133111eb;
+        result = (result ^ (result >> 30)) * Wrapping(0xbf58476d1ce4e5b9u64);
+        result = (result ^ (result >> 27)) * Wrapping(0x94d049bb133111ebu64);
         result = result ^ (result >> 31);
 
-        return result;
+        return result.0;
     }
 }
